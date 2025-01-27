@@ -8,8 +8,17 @@ import xml.etree.ElementTree as ET
 from requests.auth import HTTPBasicAuth
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from config import config_info
-
+import logging
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename='sspcm-utils.log',
+    filemode='w',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 class TLSAdapter(HTTPAdapter):
     def init_poolmanager(self, connections, maxsize, block=False, **kwargs):
@@ -106,10 +115,12 @@ class netmap_manager(object):
             headers['X-Passphrase']=self.config.sspcm_pasw
             headers['Content-Type']='application/xml'
             headers['Accept']='*/*'
+            print(payload2)
+            logger.info(f'Updating netmap {netmap} with payload {payload2}')
             resp = session.post(self.config.sspcm_base_url+self.config.update_netmap_uri+netmap,headers=headers, data=payload2, verify=False)
             #print(resp.text)
             if resp.status_code==200:
-                print(resp.status_code,resp.text)
+                logger.info(f'{resp.status_code},{resp.text}')
                 return True
             else:
                 print(resp.status_code,resp.text)
